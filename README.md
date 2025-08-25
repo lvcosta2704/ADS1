@@ -1,1 +1,5 @@
-# ADS1
+Algorithms and data structures form the backbone of computer science. This field focuses on designing efficient methods to solve computational problems and organizing data in a way that allows for fast access and manipulation.
+
+In this discipline, you learn to analyze the performance of different algorithms, a process known as algorithmic complexity analysis. This helps you understand how an algorithm's runtime and memory usage scale with the size of the input data, often expressed using Big O notation.
+
+Key topics include various sorting and searching algorithms (like merge sort, quick sort, binary search), and fundamental data structures such as arrays, linked lists, stacks, queues, hash tables, trees, and graphs. Understanding these concepts is essential for writing optimized and scalable software.
