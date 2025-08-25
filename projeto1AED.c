@@ -1,16 +1,25 @@
 #include <stdio.h>
+void menu () {
+  printf("[1] Inversao da ordem do vetor de entrada.\n");
+  printf("[2] Busca Sequencial no vetor de entrada.\n");
+  printf("[3] Busca Binaria Iterativa no vetor de entrada.\n");
+  printf("[4] Busca Binaria Recursiva no vetor de entrada.\n");
+  printf("[5] Encerrar o programa\n");
+}
 int buscaSequencial(int vetor[], int k) {
   // captura do target para procura
   int target;
+  printf("Escolha o alvo: ");
   scanf("%d", &target);
   // busca sequencial do vetor
   for (int i = 0; i < k; i++)
   {
     if (vetor[i] == target)
     {
-      return 1;
+      return i;
     }
   }
+  return -1;
 }
 void inverteNumeros(int vetor[], int k){
   // inversao dos numeros
@@ -19,6 +28,11 @@ void inverteNumeros(int vetor[], int k){
     int tmp = vetor[i];
     vetor[i] = vetor[k-1-i];
     vetor[k-1-i] = tmp;
+  }
+  printf("Invertendo...\n");
+  for (int i = 0; i < k; i++)
+  {
+    printf("%d ", vetor[i]);
   }
 }
 int buscaBinariaIterativa(int vetor[], int target, int tam) {
@@ -68,7 +82,7 @@ int buscaBinariaRecursiva(int vetor[], int target, int inicio, int fim) {
   return -1;
 }
 int main () {
-  int n;
+  int n, alvo;
   // captura do tamanho do array de numeros
   scanf("%d", &n);
   // captura dos numeros
@@ -77,4 +91,41 @@ int main () {
   {
     scanf("%d", &numeros[i]);
   }
+  // inicialiaz uma variavel escolha
+  int escolha=0;
+  // checa se a variavel escolha esta dentro do intervalo permitido, se nao estiver roda a funcao menu de novo
+  do
+  { 
+    menu();
+    scanf("%d", &escolha);
+  } while (escolha > 5 || escolha < 1);
+
+  switch (escolha)
+  {
+  case 1:
+    inverteNumeros(numeros, n);
+    break;
+  case 2:
+  int resultadobuscaSeq = buscaSequencial(numeros, n);
+    resultadobuscaSeq == -1 ? printf("O alvo nao foi encontrado") : printf("O numero procurado esta na posicao: %d", resultadobuscaSeq);
+  break;
+  case 3:
+    printf("Selecione o alvo: ");
+    scanf("%d", &alvo);
+    int resultadobuscaBinIt = buscaBinariaIterativa(numeros, alvo, n-1);
+      resultadobuscaBinIt == -1 ? printf("O alvo nao foi encontrado") : printf("O numero procurado esta na posicao: %d", resultadobuscaBinIt);
+    break;
+  case 4:
+    printf("Selecione o alvo: ");
+    scanf("%d", &alvo);
+    int resultadobuscaBinRec = buscaBinariaRecursiva(numeros, alvo, 0, n-1);
+      resultadobuscaBinRec == -1 ? printf("O alvo nao foi encontrado") : printf("O numero procurado esta na posicao: %d", resultadobuscaBinRec);
+    break;
+  case 5:
+    printf("Encerrando o programa...\n");
+    break;
+  default:
+    break;
+  }
+  
 }
