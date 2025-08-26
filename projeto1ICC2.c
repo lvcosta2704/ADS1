@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 void selectionSort(int vetor[], int n) {
   for (int i = 0; i < n-1; i++)
   {
@@ -25,9 +26,12 @@ void selectionSort(int vetor[], int n) {
   }
 }
 void bubbleSort(int vetor[], int n) {
+  // inicioaliza uma variavel que serve como sentinela
+  bool trocou;
   // cria um laço que percorre todo o vetor
   for (int i = 0; i < n-1; i++)
   {
+    trocou = false;
     // laço que compara adjacentemente quem é maior
     for (int j = 0; j < n-i-1; j++)
     { 
@@ -39,10 +43,16 @@ void bubbleSort(int vetor[], int n) {
         int tmp = vetor[j];
         vetor[j] = vetor[j+1];
         vetor[j+1] = tmp;
+        trocou = true; // atualiza o valor do booleano para o programa saber que ele trocou nessa posicao e que apos ela nao precisa mais trocar
         // debug
         printf("T %d %d\n", j, j+1);
       } 
     }
+    // se nao trocou nada, entao o vetor esta ordenado
+    if (trocou == false)
+    {
+      break;
+    } 
   }
 }
 void printaVetor(int vetor[], int n) { // funcao que printa o vetor
