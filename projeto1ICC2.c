@@ -3,17 +3,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 void selectionSort(int vetor[], int n) {
-  for (int i = 0; i < n-1; i++)
-  {
+  for (int i = 0; i < n - 1; i++) {
     // define um minimo para ir comparando no vetor adiante
     int minimo = i;
-    for (int j = i+1; j < n; j++)
-    {
+    for (int j = i + 1; j < n; j++) {
       // debug
       printf("C %d %d\n", minimo, j);
       // se encontra um minimo menor do que o minimo atual, atualiza o minimo
-      if (vetor[j] < vetor[minimo])
-      { 
+      if (vetor[j] < vetor[minimo]) {
         minimo = j;
       }
     }
@@ -21,8 +18,7 @@ void selectionSort(int vetor[], int n) {
       int tmp = vetor[i];
       vetor[i] = vetor[minimo];
       vetor[minimo] = tmp;
-      // debug
-      printf("T %d %d\n", i, minimo);
+      printf("T %d %d\n", i, minimo); // debug
   }
 }
 void bubbleSort(int vetor[], int n) {
@@ -56,9 +52,9 @@ void bubbleSort(int vetor[], int n) {
   }
 }
 void printaVetor(int vetor[], int n) { // funcao que printa o vetor
-  for (int i = 0; i < n; i++)
-  {
-    printf("%d ", vetor[i]);
+  for (int i = 0; i < n; i++) {
+    if (i > 0) printf(" ");
+    printf("%d", vetor[i]);
   }
   printf("\n");
 }
@@ -68,7 +64,7 @@ int main () {
   // captura a opcao e o tamanho do vetor de numeros
   scanf("%s", opcao);
   scanf("%d", &tam);
-  int numeros[tam];
+  int *numeros = (int *)malloc(tam * sizeof(int));
   for (int i = 0; i < tam; i++)
   {
     scanf("%d", &numeros[i]);
@@ -80,11 +76,12 @@ int main () {
     printaVetor(numeros, tam);
   }
   
-  if (strcmp(opcao, "bolha")==0)
+  else if (strcmp(opcao, "bolha")==0)
   {
     bubbleSort(numeros, tam);
     printaVetor(numeros, tam);
   }
-
+  free(numeros);
   free(opcao); // libera a memoria alocada para o ponteiro de char
+  return 0;
 }
