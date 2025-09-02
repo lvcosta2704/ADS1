@@ -43,22 +43,22 @@ void atribuiPonto(Ponto *p, float x, float y) {
 }
 
 float distancia(Ponto *p1, Ponto *p2) {
-	if ((p1 == NULL) || (p2 == NULL)) {
-		printf("Ponteiros inválidos para a operação!! Abortando...\n");
-		return;
-	}
-	float dst_x = p1->x - p2->x;
-	float dst_y = p1->y - p2->y;
-	float distancia = sqrt(dst_x*dst_x + dst_y*dst_y);
-	return distancia;
+    if ((p1 == NULL) || (p2 == NULL)) {
+        printf("Ponteiros inválidos para a operação!! Abortando...\n");
+        return -1.0f; // Corrigido!
+    }
+    float dst_x = p1->x - p2->x;
+    float dst_y = p1->y - p2->y;
+    float distancia = sqrt(dst_x*dst_x + dst_y*dst_y);
+    return distancia;
 }
 
 float distanciaOrigem(Ponto *p) {
-	if (p == NULL) {
-		printf("Ponteiro inválido para a operação!! Abortando...\n");
-		return;
-	}
-	return sqrt( (p->x * p->x) + (p->y* p->y) );
+    if (p == NULL) {
+        printf("Ponteiro inválido para a operação!! Abortando...\n");
+        return -1.0f; // Corrigido!
+    }
+    return sqrt((p->x * p->x) + (p->y * p->y));
 }
 
 void imprimePonto(Ponto *p) {
@@ -71,7 +71,7 @@ void imprimePonto(Ponto *p) {
 
 int pontosIguais(Ponto *p1, Ponto *p2) {
 	// comparamos as coordenas em x
-	float diff_x = p1->x - p2->x;
+	float diff_x = fabs(p1->x - p2->x);
 	// se a diferença é maior que a margem de erro, são diferentes
 	if (diff_x > EPS) {
 		return 0; // 0 é False, são diferentes!
@@ -79,7 +79,7 @@ int pontosIguais(Ponto *p1, Ponto *p2) {
 
 
 	// comparamos as coordenas em y
-	float diff_y = p1->y - p2->y;
+	float diff_y = fabs(p1->y - p2->y);
 	// se a diferença é maior que a margem de erro, são diferentes
 	if (diff_y > EPS) {
 		return 0; // 0 é False, são diferentes!
