@@ -1,31 +1,27 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-// busca sequencial agora recebe o target como argumento
+// busca sequencial agora recebe o alvo como argumento
 int buscaSequencial(int vetor[], int k, int alvo)
 {
   // busca sequencial do vetor
   for (int i = 0; i < k; i++)
   {
-    if (vetor[i] == alvo)
+    if (vetor[i] == alvo) // roda ate encontrar o elemento procurado
     {
       return i;
     }
   }
-  return -1;
+  return -1; // se nao achar, retorna falha
 }
 void inverteNumeros(int vetor[], int k)
 {
-  // inversao dos numeros
-  for (int i = 0; i < k / 2; i++)
+  // apenas imprime o vetor invertido, sem modificá-lo na memória
+  for (int i = k - 1; i >= 0; i--)
   {
-    int tmp = vetor[i];
-    vetor[i] = vetor[k - 1 - i];
-    vetor[k - 1 - i] = tmp;
-  }
-  for (int i = 0; i < k; i++)
-  {
-    printf("%d ", vetor[i]);
+    if (i < k - 1) // arruma o espaçamento no final 
+      printf(" ");
+    printf("%d", vetor[i]);
   }
   printf("\n");
 }
@@ -96,9 +92,10 @@ int main()
   }
   // inicializa uma variavel escolha
   int escolha = 0;
-  while (1)
+  while (scanf("%d", &escolha) == 1)
   {
-    scanf("%d", &escolha);
+    if (escolha == 5)
+      break;
 
     switch (escolha)
     {
@@ -122,7 +119,8 @@ int main()
     }
     case 2:
     {
-      scanf("%d", &alvo);
+      if (scanf("%d", &alvo) != 1)
+        break;
       gettimeofday(&inicio, NULL);
       int resultadobuscaSeq = buscaSequencial(numeros, n, alvo);
       // uso de um operador ternário
@@ -140,7 +138,8 @@ int main()
     }
     case 3:
     {
-      scanf("%d", &alvo);
+      if (scanf("%d", &alvo) != 1)
+        break;
       gettimeofday(&inicio, NULL);
       int resultadobuscaBinIt = buscaBinariaIterativa(numeros, alvo, n);
       gettimeofday(&fim, NULL);
@@ -157,7 +156,8 @@ int main()
     }
     case 4:
     {
-      scanf("%d", &alvo);
+      if (scanf("%d", &alvo) != 1)
+        break;
       gettimeofday(&inicio, NULL);
       int resultadobuscaBinRec = buscaBinariaRecursiva(numeros, alvo, 0, n - 1);
       gettimeofday(&fim, NULL);
@@ -173,9 +173,10 @@ int main()
       break;
     }
     case 5:
-      return 0; // Sai do programa
+      break; // Sai do programa
     default:
       break;
     }
   }
+  return 0;
 }
