@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "ALG4-00.C": "cpp"
+        "ALG4-00.C": "cpp",
+        "ICC2-08.C": "cpp"
     }
 }
