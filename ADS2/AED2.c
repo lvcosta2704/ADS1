@@ -1,3 +1,7 @@
+/*
+    ---------- TRABALHO 1 DE ALGORITMOS E ESTRUTURA DE DADOS -------------
+    INTEGRANTES: LUCAS VINICIUS DA COSTA (16885265), HUMBERTO HENRIQUE DE AMORIM (16814612), EDUARDO MALAFRONTE ALVES DE SOUZA (16862798)
+*/ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +15,7 @@ typedef struct node {
 struct BigInt {
     Node *head;
     char sinal;
+    int qtd_bloco;
 };
 
 BigInt *inicializar(void) {
@@ -56,6 +61,7 @@ int definir(BigInt *n, const char *decimal){
     // se certifica que a lista esta vazia
     n->head = NULL;
     // esta parte se designa a alocar corretamente os blocos e seus tamanhos
+    n->qtd_bloco = 0;
     while (posatual > 0)
     {
         int tam_bloco, inicio_bloco;
@@ -82,6 +88,7 @@ int definir(BigInt *n, const char *decimal){
         n->head = novo;
 
         posatual -= tam_bloco; // atualiza a postual que esta percorrendo no ponteiro decimal
+        n->qtd_bloco++;
     }
     return 1;    
 }
@@ -133,4 +140,27 @@ BigInt *soma(const BigInt *a, const BigInt *b){
 
     res->sinal = '+';
     return res;
+}
+
+int maior(const BigInt *a, const BigInt *b){
+    if ((!a) || (!b)) return -1; // ponteiros nao alocados, retorna fracasso
+
+    //checagem se sinais sao diferentes
+
+    if (a->sinal != b->sinal) {
+        return (a->sinal == '+') ? 1 : 0; // uso de ternario para determinar se o sinal de A é positivo e se for ele é maior do que B, pois os sinais sao diferentes nesse caso de if
+    }
+    
+    //checagem da grandeza de blocos em cada numero
+    //assumindo que ambos tem sinais iguais, pois nao entrou no if de cima
+    if (a->qtd_bloco != b->qtd_bloco) {
+        // se a é positivo entao quem tem mais blocos é o maior
+        if (a->sinal == '+') {
+            return (a->qtd_bloco > b->qtd_bloco) ? 1 : 0;
+        }
+    } else {
+        return (a->qtd_bloco < b->qtd_bloco) ? 1 : 0; // se a tem sinal negativo entao quem tem menos blocos é o maior
+    }
+
+
 }
