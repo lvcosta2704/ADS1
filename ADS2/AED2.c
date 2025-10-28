@@ -157,10 +157,100 @@ int maior(const BigInt *a, const BigInt *b){
         // se a é positivo entao quem tem mais blocos é o maior
         if (a->sinal == '+') {
             return (a->qtd_bloco > b->qtd_bloco) ? 1 : 0;
-        }
-    } else {
+        } else {
         return (a->qtd_bloco < b->qtd_bloco) ? 1 : 0; // se a tem sinal negativo entao quem tem menos blocos é o maior
+        }
     }
 
+    // se a quantidade de blocos é igual entao é preciso analisar cada algarismo dos blocos
+    int vet1[a->qtd_bloco];
+    int vet2[b->qtd_bloco];
+    Node *temp1 = a->head;
+    Node *temp2 = b->head;
 
+    for (int i = a->qtd_bloco-1; i >= 0 ; i--)
+    {
+        vet1[i] = atoi(temp1->digitos);
+        temp1 = temp1->next;
+    }
+
+    for (int i = b->qtd_bloco-1; i >= 0 ; i--)
+    {
+        vet2[i] = atoi(temp2->digitos);
+        temp2 = temp2->next;
+    }
+
+    for (int i = 0; i < a->qtd_bloco; i++)
+    {
+        if (vet1[i] != vet2[i])
+        {
+            if (a->sinal == '+')
+            {
+                return (vet1[i] > vet2[i]) ? 1 : 0;
+            } else {
+                return (vet1[i] < vet2[i]) ? 1 : 0;
+            }
+        }
+    }
+    return 0; // se for 0 eles sao iguais
+    
+    
+}
+
+
+int menor(const BigInt *a, const BigInt *b){
+    if ((!a) || (!b)) return -1; // ponteiros nao inicializados
+    // checagem da diferença de sinais entre os numeros, se for negativo o a entao ele ja é o menor por si só
+    if (a->sinal != b->sinal) return (a->sinal == '-') ? 1 : 0;
+    // checagem na quantidade de blocos que cada um tem para saber qual é o menor
+    if (a->qtd_bloco != b->qtd_bloco) {
+        if (a->sinal == '-') {
+            return (a->qtd_bloco > b->qtd_bloco) ? 1 : 0;
+            // se o sinal for negativo entao o menor tera a maior quantidade de blocos
+        } else {
+            return (a->qtd_bloco < b->qtd_bloco) ? 1 : 0;
+            //se o sinal for positivo entao o com menos blocos é o menor
+        }
+    }
+    
+    // a partir daqui assume-se que a quantidade de blocos e o sinal sao iguais, logo compara-se algarismo a algarismo
+    int vet1[a->qtd_bloco];
+    int vet2[b->qtd_bloco];
+    Node *temp1 = a->head;
+    Node *temp2 = b->head;
+
+    for (int i = a->qtd_bloco - 1; i >= 0 ; i--) {
+        vet1[i] = atoi(temp1->digitos);
+        temp1 = temp1->next;
+    }
+    for (int i = b->qtd_bloco - 1; i >= 0 ; i--) {
+        vet2[i] = atoi(temp2->digitos);
+        temp2 = temp2->next;
+    }
+
+    for (int i = 0; i < a->qtd_bloco; i++) {
+        if (vet1[i] != vet2[i]) { 
+            if (a->sinal == '+') { // se positivo quem tem o menor valor absoluto é o menor
+                return (vet1[i] < vet2[i]) ? 1 : 0;
+            } else { // se negativo, quem tem o maior valor absoluto é menor
+                return (vet1[i] > vet2[i]) ? 1 : 0;
+            }
+        }
+    }
+
+    return 0; // sao iguais os numeros
+}
+
+void destruir(BigInt **n) {
+    if (!n || !(*n)) {
+        return; // lista nao esta nem inicializada
+    }
+    Node *tmp = (*n)->head;
+	while (tmp != NULL) {
+		Node *rem = tmp; // salva o endereço do node tmp em um REM
+		tmp = tmp->next; // atualiza o tmp para o proximo da lista
+		free(rem); // libera o rem da memoria
+	}
+    free(*n);
+	*n = NULL; // aponta n pra NULL para evitar doublefree por exemplo
 }
