@@ -23,17 +23,16 @@
    Nós vamos montar isso usando nós encadeados.
 */
 
-
 /*
     NodeType diz qual tipo de dado está guardado no nó:
     - ATOM significa que o nó guarda um número inteiro.
     - LIST significa que o nó guarda uma sublista (outro nível de parênteses).
 */
-typedef enum {
+typedef enum
+{
     ATOM = 0, // nó que guarda um átomo (inteiro)
     LIST = 1  // nó que guarda uma sublista
 } NodeType;
-
 
 /*
     Nosso nó da lista encadeada.
@@ -48,17 +47,18 @@ typedef enum {
     "head" é o conteúdo principal do nó.
     "tail" é o próximo irmão do mesmo nível.
 */
-typedef struct node {
-    NodeType type;  // ATOM ou LIST
+typedef struct node
+{
+    NodeType type; // ATOM ou LIST
 
-    union {
+    union
+    {
         int atom;          // se type == ATOM: valor do átomo
         struct node *list; // se type == LIST: ponteiro pro 1o elemento da sublista
-    } head; // "cabeça" da lista generalizada
+    } head;                // "cabeça" da lista generalizada
 
     struct node *tail; // "cauda": próximo elemento no mesmo nível
 } node;
-
 
 /*
    =========================
@@ -73,8 +73,9 @@ typedef struct node {
     Exemplo:
         new_atom(42) cria um nó ATOM com valor 42.
 */
-node *new_atom(int v) {
-    node *n = (node*)malloc(sizeof(node));
+node *new_atom(int v)
+{
+    node *n = (node *)malloc(sizeof(node));
     n->type = ATOM;
     n->head.atom = v;
     n->tail = NULL; // ainda não tem próximo no mesmo nível
@@ -89,8 +90,9 @@ node *new_atom(int v) {
     Exemplo:
         new_list(NULL)  => representa "()"
 */
-node *new_list(node *first_elem) {
-    node *n = (node*)malloc(sizeof(node));
+node *new_list(node *first_elem)
+{
+    node *n = (node *)malloc(sizeof(node));
     n->type = LIST;
     n->head.list = first_elem; // pode ser NULL para lista vazia
     n->tail = NULL;            // esse nó LIST pode estar num nível e ter um "irmão" depois
@@ -112,22 +114,48 @@ node *new_list(node *first_elem) {
     Retorna sempre o ponteiro para o primeiro nó daquele nível.
     (isso é útil porque se head era NULL, o novo head passa a ser elem)
 */
-node *append(node *head, node *elem) {
-    if (head == NULL) {
+node *append(node *head, node *elem)
+{
+    if (head == NULL)
+    {
         // lista estava vazia, então agora o primeiro nó é elem
         return elem;
-    } else {
+    }
+    else
+    {
         // senão, caminha até o último e coloca elem lá
         node *cur = head;
-        while (cur->tail != NULL) {
+        while (cur->tail != NULL)
+        {
             cur = cur->tail;
         }
         cur->tail = elem;
         return head; // cabeça não mudou
     }
 }
+int profundidade(node *n)
+{
+    if (n == NULL)
+        return 0;
+    if (n->type == ATOM)
+    {
+        return profundidade(n->tail);
+    }
+    if (n->type == LIST)
+    {
+        int profundidade_interna = 0;
+        if (n->head.list != NULL)
+        {
+            profundidade_interna = 1 + profundidade(n->head.list);
+        }
 
+        int profundidade_cauda = profundidade(n->tail);
 
+        return (profundidade_interna > profundidade_cauda) ? profundidade_interna : profundidade_cauda;
+    }
+
+    return 0;
+}
 /*
    =========================
    PARSER
@@ -161,20 +189,24 @@ node *append(node *head, node *elem) {
       retorna -123
       e agora *s vai estar apontando para ",(" (logo depois do número)
 */
-int parse_int(char **s) {
+
+int parse_int(char **s)
+{
     int sign = 1;
     int val = 0;
 
     // checa se tem sinal negativo
-    if (**s == '-') {
+    if (**s == '-')
+    {
         sign = -1;
         (*s)++; // avança o ponteiro para depois do '-'
     }
 
     // lê todos os dígitos consecutivos
-    while (**s >= '0' && **s <= '9') {
+    while (**s >= '0' && **s <= '9')
+    {
         val = val * 10 + (**s - '0'); // acumula o valor
-        (*s)++; // anda para o próximo caractere
+        (*s)++;                       // anda para o próximo caractere
     }
 
     return sign * val;
@@ -194,11 +226,15 @@ node *parse_list(char **s);    // lê "( ... )"
     Caso contrário, assumimos que é um inteiro,
     criamos um nó ATOM com new_atom.
 */
-node *parse_element(char **s) {
-    if (**s == '(') {
+node *parse_element(char **s)
+{
+    if (**s == '(')
+    {
         // sublista
         return parse_list(s);
-    } else {
+    }
+    else
+    {
         // átomo numérico
         int v = parse_int(s);
         return new_atom(v);
@@ -222,14 +258,16 @@ node *parse_element(char **s) {
     O que parse_list retorna NÃO é a "lista interna crua".
     Ele retorna um nó LIST cujo head.list aponta para essa lista interna.
 */
-node *parse_list(char **s) {
+node *parse_list(char **s)
+{
     (*s)++; // consome '(' e avança o ponteiro na string
 
     node *level_head = NULL; // este vai ser o primeiro nó do nível atual
 
     // Caso especial: "()"
     // Se logo depois de '(' já veio ')', então a lista é vazia.
-    if (**s == ')') {
+    if (**s == ')')
+    {
         (*s)++; // consome ')'
         // cria um nó LIST que aponta pra NULL
         return new_list(NULL);
@@ -249,7 +287,8 @@ node *parse_list(char **s) {
            depois de ler "10", a string está em ",20,30)"
            então enquanto eu ver ',', eu continuo lendo.
     */
-    while (**s == ',') {
+    while (**s == ',')
+    {
         (*s)++; // consome ','
         node *next_elem = parse_element(s);
         level_head = append(level_head, next_elem);
@@ -261,7 +300,8 @@ node *parse_list(char **s) {
         Exemplo:
             depois de ler "30", a string está em ")"
     */
-    if (**s == ')') {
+    if (**s == ')')
+    {
         (*s)++; // consome ')'
     }
 
@@ -276,7 +316,6 @@ node *parse_list(char **s) {
     */
     return new_list(level_head);
 }
-
 
 /*
    =========================
@@ -316,11 +355,14 @@ void print_node(node *n); // declaração antecipada
         nível: [1] -> [2] -> [sublista] -> NULL
         saída: "1,2,(...)"
 */
-void print_list_elems(node *n) {
+void print_list_elems(node *n)
+{
     node *cur = n;
-    while (cur != NULL) {
+    while (cur != NULL)
+    {
         print_node(cur);
-        if (cur->tail != NULL) {
+        if (cur->tail != NULL)
+        {
             // se existe próximo no mesmo nível, imprime vírgula
             printf(",");
         }
@@ -338,24 +380,28 @@ void print_list_elems(node *n) {
       chamando print_list_elems para imprimir os elementos
       internos daquela sublista.
 */
-void print_node(node *n) {
-    if (n == NULL) {
+void print_node(node *n)
+{
+    if (n == NULL)
+    {
         // lista vazia
         printf("()");
         return;
     }
 
-    if (n->type == ATOM) {
+    if (n->type == ATOM)
+    {
         // nó que guarda só um número
         printf("%d", n->head.atom);
-    } else { // LIST
+    }
+    else
+    { // LIST
         // nó que guarda uma sublista
         printf("(");
         print_list_elems(n->head.list);
         printf(")");
     }
 }
-
 
 /*
    =========================
@@ -374,13 +420,17 @@ void print_node(node *n) {
    A sublista é uma cadeia encadeada via tail,
    então preciso caminhar e liberar cada um.
 */
-void free_node(node *n) {
-    if (n == NULL) return;
+void free_node(node *n)
+{
+    if (n == NULL)
+        return;
 
-    if (n->type == LIST) {
+    if (n->type == LIST)
+    {
         // libera a lista interna inteira
         node *sub = n->head.list;
-        while (sub != NULL) {
+        while (sub != NULL)
+        {
             node *next = sub->tail; // guarda próximo antes de liberar
             free_node(sub);         // libera recursivamente
             sub = next;             // avança
@@ -390,7 +440,6 @@ void free_node(node *n) {
     // finalmente libera o próprio nó
     free(n);
 }
-
 
 /*
    =========================
@@ -408,11 +457,12 @@ void free_node(node *n) {
    Sempre assumimos que a string tem parênteses externos.
    Por exemplo "(42)" e não "42" direto.
 */
-int main() {
+int main()
+{
     char buffer[1024]; // guarda a linha digitada
 
-    printf("Digite a lista generalizada:\n");
-    if (!fgets(buffer, sizeof(buffer), stdin)) {
+    if (!fgets(buffer, sizeof(buffer), stdin))
+    {
         // se fgets falhar (EOF etc.), só termina
         return 1;
     }
@@ -423,10 +473,14 @@ int main() {
     // raiz SEMPRE é uma lista entre parênteses
     node *root = parse_list(&ptr);
 
-    // Mostra o resultado re-serializado
-    printf("\nResultado:\n");
-    print_node(root);
-    printf("\n");
+    int level_max = 0;
+
+    if (root != NULL && root->head.list != NULL)
+    {
+        level_max = profundidade(root->head.list);
+    }
+
+    printf("%d\n", level_max);
 
     // libera toda a memória alocada
     free_node(root);

@@ -9,7 +9,8 @@
 // definicao do nó que guardará 4 digitos em char (+1 para terminador)
 typedef struct node
 {
-    char digitos[6];
+    // espaço maior para evitar warnings de truncamento em snprintf 
+    char digitos[12];
     struct node *next;
 } Node;
 // definicao da estrutura de numero, que é semelhante a uma lista ligada
@@ -28,8 +29,12 @@ BigInt *inicializar(void)
         return NULL; // alocacao falhou
     }
     N->head = NULL;
+    N->sinal = '+';
+    N->qtd_bloco = 0;
     return N;
 }
+
+/* keep soma implementation simple and inline later */
 // esta funcao fica encarregada de transformar strings de numeros em uma lista ligada de numeros
 int definir(BigInt *n, const char *decimal)
 {
@@ -107,94 +112,213 @@ BigInt *soma(const BigInt *a, const BigInt *b)
     if ((!a) || (!b))
         return NULL; // ponteiros de numeros invalidos
 
-    // copia blocos de cada BigInt para vetores inteiros, onde index 0 é o bloco mais significativo
-    int na = a->qtd_bloco;
-    int nb = b->qtd_bloco;
-
-    int *vetA = NULL;
-    int *vetB = NULL;
-    if (na > 0)// se o numero tem mais de 1 bloco este if aloca um vetor de ints para colocar os numeros
+    /* copiar blocos para vetores (vet[0] = bloco mais significativo) */
+    int qtd_bloco_a = a->qtd_bloco;
+    int qtd_bloco_b = b->qtd_bloco;
+    int *A = NULL, *B = NULL; // ponteiro que seram nossos vetores de numeros auxiliares
+    if (qtd_bloco_a > 0)
     {
-        vetA = malloc(sizeof(int) * na);
-        if (!vetA)
-            return NULL; // tratamento dos endereços nao alocados
+        A = malloc(sizeof(int) * qtd_bloco_a);
+        if (!A)
+            return NULL;
     }
-    if (nb > 0) // se o numero tem mais de 1 bloco este if aloca um vetor de ints para colocar os numeros
+    if (qtd_bloco_b > 0)
     {
-        vetB = malloc(sizeof(int) * nb);
-        if (!vetB)
+        B = malloc(sizeof(int) * qtd_bloco_b);
+        if (!B)
         {
-            free(vetA); // tratamento dos endereços nao alocados
+            free(A);
             return NULL;
         }
     }
-
-    Node *tmp = a->head;
-    // esses dois for's sao resposaveis por encher os vetores com os numeros convertidos para int pela funcao atoi()
-    for (int i = 0; i < na; i++)
+    Node *t = a->head;
+    for (int i = 0; i < qtd_bloco_a; i++)
     {
-        vetA[i] = atoi(tmp->digitos);
-        tmp = tmp->next;
+        A[i] = atoi(t->digitos);
+        t = t->next;
     }
-    tmp = b->head;
-    for (int i = 0; i < nb; i++)
+    t = b->head;
+    for (int i = 0; i < qtd_bloco_b; i++)
     {
-        vetB[i] = atoi(tmp->digitos);
-        tmp = tmp->next;
+        B[i] = atoi(t->digitos);
+        t = t->next;
     }
 
-    BigInt *res = inicializar(); // inicializa uma lista(numero de resposta)
+    // caso sinais iguais -> soma direta
+    if (a->sinal == b->sinal)
+    {
+        BigInt *res = inicializar();
+        if (!res)
+        {
+            free(A);
+            free(B);
+            return NULL;
+        }
+        res->head = NULL;
+        res->qtd_bloco = 0;
+        int indice_a = qtd_bloco_a - 1, indice_b = qtd_bloco_b - 1, carry = 0;
+        while (indice_a >= 0 || indice_b >= 0 || carry)
+        {
+            int valor_a = (indice_a >= 0) ? A[indice_a] : 0;
+            int valor_b = (indice_b >= 0) ? B[indice_b] : 0;
+            int sum = valor_a + valor_b + carry;
+            carry = sum / 10000;
+            int bloco = sum % 10000;
+
+            Node *novo = malloc(sizeof(Node));
+            if (!novo)
+            {
+                // liberar
+                Node *r;
+                while (res->head)
+                {
+                    r = res->head;
+                    res->head = res->head->next;
+                    free(r);
+                }
+                free(res);
+                free(A);
+                free(B);
+                return NULL;
+            }
+            snprintf(novo->digitos, sizeof(novo->digitos), "%04d", bloco);
+            novo->next = res->head;
+            res->head = novo;
+            res->qtd_bloco++;
+            indice_a--;
+            indice_b--;
+        }
+        res->sinal = a->sinal;
+        free(A);
+        free(B);
+        return res;
+    }
+
+    // sinais diferentes -> efetuar subtracao de magnitudes
+    // primeiro comparar magnitudes
+    int cmp = 0;
+    if (qtd_bloco_a != qtd_bloco_b)                 // quantidade de blocos diferente
+        cmp = (qtd_bloco_a > qtd_bloco_b) ? 1 : -1; // usa ternario para atribuir valor a variavel cmp
+    else                                            // quantidade de blocos igual
+    {
+        for (int i = 0; i < qtd_bloco_a; i++)
+        {
+            if (A[i] != B[i])
+            {
+                cmp = (A[i] > B[i]) ? 1 : -1;
+                break;
+            }
+        }
+    }
+
+    if (cmp == 0)
+    {
+        // resultado zero
+        BigInt *res = inicializar();
+        if (!res)
+        {
+            free(A);
+            free(B);
+            return NULL;
+        }
+        Node *n = malloc(sizeof(Node));
+        if (!n)
+        {
+            free(res);
+            free(A);
+            free(B);
+            return NULL;
+        }
+        strcpy(n->digitos, "0");
+        n->next = NULL;
+        res->head = n;
+        res->qtd_bloco = 1;
+        res->sinal = '+';
+        free(A);
+        free(B);
+        return res;
+    }
+
+    // determinar maior e menor em modulo
+    int *maiormag = NULL, *menormag = NULL; // maiormag = maior modulo vetor, menormag = menor
+    int maiorlen = 0, menorlen = 0;
+    char resultado_sinal = '+';
+    if (cmp > 0)
+    {
+        maiormag = A;
+        maiorlen = qtd_bloco_a;
+        menormag = B;
+        menorlen = qtd_bloco_b;
+        resultado_sinal = a->sinal;
+    }
+    else
+    {
+        maiormag = B;
+        maiorlen = qtd_bloco_b;
+        menormag = A;
+        menorlen = qtd_bloco_a;
+        resultado_sinal = b->sinal;
+    }
+
+    BigInt *res = inicializar();
     if (!res)
     {
-        free(vetA);
-        free(vetB);
+        free(A);
+        free(B);
         return NULL;
     }
     res->head = NULL;
     res->qtd_bloco = 0;
 
-    int carry = 0;
-    int ia = na - 1;
-    int ib = nb - 1;
-    // dentro desse while acontecem as somas e tratamentos dos carrys
-    while (ia >= 0 || ib >= 0 || carry)
+    int indice_maior = maiorlen - 1, indice_menor = menorlen - 1, empresta = 0;
+    while (indice_maior >= 0 || indice_menor >= 0)
     {
-        int va = (ia >= 0) ? vetA[ia] : 0;
-        int vb = (ib >= 0) ? vetB[ib] : 0;
-        int sum = va + vb + carry;
-        carry = sum / 10000;
-        int bloco = sum % 10000;
+        int valor_a = (indice_maior >= 0) ? maiormag[indice_maior] : 0;
+        int valor_b = (indice_menor >= 0) ? menormag[indice_menor] : 0;
+        int diferenca = valor_a - valor_b - empresta;
+        if (diferenca < 0)
+        {
+            diferenca += 10000;
+            empresta = 1;
+        }
+        else
+            empresta = 0;
 
         Node *novo = malloc(sizeof(Node));
-        if (!novo) // se o novo nao for alocado entao temos que liberar todo os numeros criados ate agora
+        if (!novo)
         {
-            // libera lista res alocada até aqui
-            Node *t;
+            Node *r;
             while (res->head)
             {
-                t = res->head;
+                r = res->head;
                 res->head = res->head->next;
-                free(t);
+                free(r);
             }
             free(res);
-            free(vetA);
-            free(vetB);
+            free(A);
+            free(B);
             return NULL;
         }
-        // a funcao snprintf é resposavel por tratar os paddings de zeros nos numeros que necessitam
-        snprintf(novo->digitos, sizeof(novo->digitos), "%04d", bloco);
-        // insere o bloco novo na lista BigInt res
+        snprintf(novo->digitos, sizeof(novo->digitos), "%04d", diferenca);
         novo->next = res->head;
         res->head = novo;
         res->qtd_bloco++;
-
-        ia--;
-        ib--;
+        indice_maior--;
+        indice_menor--;
     }
 
-    res->sinal = '+';
-    free(vetA);
-    free(vetB);
+    /* normalizar remover zeros à esquerda */
+    while (res->head && res->qtd_bloco > 1 && atoi(res->head->digitos) == 0)
+    {
+        Node *rem = res->head;
+        res->head = res->head->next;
+        free(rem);
+        res->qtd_bloco--;
+    }
+
+    res->sinal = resultado_sinal;
+    free(A);
+    free(B);
     return res;
 }
 // imprime um BigInt no stdout
@@ -297,7 +421,7 @@ int menor(const BigInt *a, const BigInt *b)
     // checagem da diferença de sinais entre os numeros, se for negativo o a entao ele ja é o menor por si só
     if (a->sinal != b->sinal)
         return (a->sinal == '-') ? 1 : 0;
-    // checagem na quantidade de blocos que cada um tem para saber qual é o menor
+    // checagem qtd_bloco_a quantidade de blocos que cada um tem para saber qual é o menor
     if (a->qtd_bloco != b->qtd_bloco)
     {
         if (a->sinal == '-')
