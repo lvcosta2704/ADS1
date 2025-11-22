@@ -2,10 +2,14 @@
     ---------- TRABALHO 2 DE ALGORITMOS E ESTRUTURA DE DADOS -------------
     INTEGRANTES: LUCAS VINICIUS DA COSTA (16885265), HUMBERTO HENRIQUE DE AMORIM (16814612), EDUARDO MALAFRONTE ALVES DE SOUZA (16862798)
 */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "AED2.h"
+
+
 // definicao do nó que guardará 4 digitos em char (+1 para terminador)
 typedef struct node
 {
@@ -34,7 +38,6 @@ BigInt *inicializar(void)
     return N;
 }
 
-/* keep soma implementation simple and inline later */
 // esta funcao fica encarregada de transformar strings de numeros em uma lista ligada de numeros
 int definir(BigInt *n, const char *decimal)
 {
@@ -211,7 +214,7 @@ BigInt *soma(const BigInt *a, const BigInt *b)
         }
     }
 
-    if (cmp == 0)
+    if (cmp == 0) // se cmp for igual a zero quer dizer que ambos tem mesma quantidade de blocos
     {
         // resultado zero
         BigInt *res = inicializar();
@@ -243,15 +246,15 @@ BigInt *soma(const BigInt *a, const BigInt *b)
     int *maiormag = NULL, *menormag = NULL; // maiormag = maior modulo vetor, menormag = menor
     int maiorlen = 0, menorlen = 0;
     char resultado_sinal = '+';
-    if (cmp > 0)
+    if (cmp > 0) // se cmp for 1, qtd_blocoA é maior que qtd_blocoB
     {
-        maiormag = A;
+        maiormag = A; // logo em modulo A é maior
         maiorlen = qtd_bloco_a;
         menormag = B;
         menorlen = qtd_bloco_b;
         resultado_sinal = a->sinal;
     }
-    else
+    else // qtd_blocoB é maior em modulo
     {
         maiormag = B;
         maiorlen = qtd_bloco_b;
@@ -260,8 +263,8 @@ BigInt *soma(const BigInt *a, const BigInt *b)
         resultado_sinal = b->sinal;
     }
 
-    BigInt *res = inicializar();
-    if (!res)
+    BigInt *res = inicializar(); // inicializa um bigint para resposta 
+    if (!res) // trata a não alocação 
     {
         free(A);
         free(B);
@@ -271,7 +274,7 @@ BigInt *soma(const BigInt *a, const BigInt *b)
     res->qtd_bloco = 0;
 
     int indice_maior = maiorlen - 1, indice_menor = menorlen - 1, empresta = 0;
-    while (indice_maior >= 0 || indice_menor >= 0)
+    while (indice_maior >= 0 || indice_menor >= 0) // 
     {
         int valor_a = (indice_maior >= 0) ? maiormag[indice_maior] : 0;
         int valor_b = (indice_menor >= 0) ? menormag[indice_menor] : 0;
@@ -324,7 +327,7 @@ BigInt *soma(const BigInt *a, const BigInt *b)
 // imprime um BigInt no stdout
 void imprimir(const BigInt *n)
 {
-    if (!n)
+    if (!n) // imprime zero em ambos os casos de nao alocação para facilitar a percepção de erros
     {
         printf("0");
         return;
